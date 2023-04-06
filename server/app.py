@@ -39,11 +39,37 @@ class Plants(Resource):
 
 api.add_resource(Plants, '/plants')
 
+
+
+# Making a PATCH request to this route with an object in the body should update one plant, and return the updated plant in the response
 class PlantByID(Resource):
 
     def get(self, id):
         plant = Plant.query.filter_by(id=id).first().to_dict()
         return make_response(jsonify(plant), 200)
+    
+    def patch(self,id):
+        data = request.get_json()
+        new_info = Plant.query.filter_by(id = id).first()
+        for attr in data:
+            setattr(new_info, attr, data[attr])
+
+        db.session.add(new_info)
+        db.session.commit()
+
+        response_dict = new_info.to_dict()
+        response = make_response(response_dict, 200)
+        return response
+    
+    def delete(self, id):
+        bye_bye = Plant.query.filter_by(id =id).first()
+        db.session.delete(bye_bye)
+        db.session.commit()
+
+        response_dict = { "message": " "}
+        response = make_response(response_dict, 204)
+        return response
+
 
 api.add_resource(PlantByID, '/plants/<int:id>')
         
